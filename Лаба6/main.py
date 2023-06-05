@@ -1,47 +1,43 @@
-import numpy as np
 import math
 
+def runge_kutta(f, a, b, h, y0):
+    x_values = [a]
+    y_values = [y0]
+    delta_y_values = [0] 
+    k_values = [0] 
+    x = a
+    y = y0
 
-def runge_kutta_modified(f, x_init, y_init, step_size, num_steps):
-    x_vals = np.zeros(num_steps)
-    y_vals = np.zeros(num_steps)
-    x_vals[0] = x_init
-    y_vals[0] = y_init
+    while x < b:
+        k1 = h * f(x, y)
+        k2 = h * f(x + h/2, y + k1/2)
+        k3 = h * f(x + h/2, y + k2/2)
+        k4 = h * f(x + h, y + k3)
 
-    for i in range(1, num_steps):
-        k1 = step_size * f(x_vals[i - 1], y_vals[i - 1])
-        k2 = step_size * f(x_vals[i - 1] + 0.5 *
-                           step_size, y_vals[i - 1] + 0.5 * k1)
-        k3 = step_size * f(x_vals[i - 1] + 0.5 *
-                           step_size, y_vals[i - 1] + 0.5 * k2)
-        k4 = step_size * f(x_vals[i - 1] + step_size, y_vals[i - 1] + k3)
+        y = y + (k1 + 2*k2 + 2*k3 + k4) / 6
+        x = x + h
 
-        x_vals[i] = x_vals[i - 1] + step_size
-        y_vals[i] = y_vals[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6.0
+        delta_y = (k1 + 2*k2 + 2*k3 + k4) / 6  
+        k = h * f(x, y) 
+        x_values.append(x)
+        y_values.append(y)
+        delta_y_values.append(delta_y)
+        k_values.append(k)
 
-    return x_vals, y_vals
+    return x_values, y_values, delta_y_values, k_values
 
 
-def func(x, y):
+def f(x, y):
     return 1 + 3 * x - math.sqrt(y)
 
+a = 1
+b = 1.5
+h = 0.1
+y0 = 1
 
-initial_x = 1
-initial_y = 1.0
-step_size = 0.25
-num_steps = 1000
+x_values, y_values, delta_y_values, k_values = runge_kutta(f, a, b, h, y0)
 
-x_values, y_values = runge_kutta_modified(
-    func, initial_x, initial_y, step_size, num_steps)
-
-for x_val, y_val in zip(x_values, y_values):
-    if x_val == 1:
-        y_val_rounded = round(y_val, 5)
-        print("Approximation for x = 1:")
-        print(f"y = {y_val_rounded}")
-        print()
-    elif x_val == 4.5:
-        y_val_rounded = round(y_val, 5)
-        print("Approximation for x = 4.5:")
-        print(f"y = {y_val_rounded}")
-        print()
+print("    x     |      y      |  delta_y  |     K    ")
+print("------------------------------------------------")
+for x, y, delta_y, k in zip(x_values, y_values, delta_y_values, k_values):
+    print(f"{x:8.2f}  | {y:10.4f} | {delta_y:10.4f} | {k:9.4f}")

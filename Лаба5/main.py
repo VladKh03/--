@@ -1,30 +1,36 @@
+import numpy as np
 import math
 
+def euler_method(f, x0, y0, h, interval):
+    num_steps = int((interval[1] - interval[0]) / h)
+    x = np.zeros(num_steps + 1)
+    y = np.zeros(num_steps + 1)
+    y_prime = np.zeros(num_steps + 1)
+    x[0] = x0
+    y[0] = y0
+
+    for i in range(num_steps):
+        x[i + 1] = x[i] + h
+        y[i + 1] = y[i] + h * f(x[i], y[i])
+        y_prime[i] = f(x[i], y[i])
+
+    y_prime[-1] = f(x[-1], y[-1])
+
+    return x, y, y_prime
 
 def f(x, y):
     return 1 + 3 * x - math.sqrt(y)
 
+x0 = 1  
+y0 = 1  
+h = 0.25  
+interval = [1, 4.5]  
 
-def euler_method(a, b, y0, h):
-    x_values = []
-    y_values = []
-    x = a
-    y = y0
-    while x <= b:
-        x_values.append(x)
-        y_values.append(y)
-        y += h * f(x, y)
-        x += h
-    return x_values, y_values
+x, y, y_prime = euler_method(f, x0, y0, h, interval)
 
-a = 1
-b = 4.5
-y0 = 1
-h = 0.25
 
-x_values, y_values = euler_method(a, b, y0, h)
+print("   i    |     x     |     y     |   y_prime ")
+print("-------------------------------------------")
+for i in range(len(x)):
+    print(f"  {i:4d}  |  {x[i]:8.5f}  | {y[i]:9.5f} | {y_prime[i]:9.5f} ")
 
-print(" x\t| y")
-print("-------------")
-for x, y in zip(x_values, y_values):
-    print(f"{x:.2f}\t| {y:.5f}")
