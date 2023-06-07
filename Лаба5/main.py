@@ -19,7 +19,7 @@ def euler_method(f, x0, y0, h, interval):
     return x, y, y_prime
 
 def f(x, y):
-    return 1 + 3 * x - math.sqrt(y)
+    return 1 + 3 * x + math.sqrt(y)
 
 x0 = 1  
 y0 = 1  
@@ -29,7 +29,7 @@ interval = [1, 4.5]
 x, y, y_prime = euler_method(f, x0, y0, h, interval)
 
 
-print("   i    |     x     |     y     |   y_prime ")
+print("   i    |     xi     |     yi     |   y` ")
 print("-------------------------------------------")
 for i in range(len(x)):
     print(f"  {i:4d}  |  {x[i]:8.5f}  | {y[i]:9.5f} | {y_prime[i]:9.5f} ")

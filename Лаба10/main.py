@@ -1,77 +1,77 @@
-import numpy as np
+import math
 
 
-def divided_differences(x, y):
+def run():
+    x0 = enter_double("Enter the starting point: ")
+    xn = enter_double("Enter the endpoint: ")
+    h = enter_double("Enter a step: ")
+    extrapolation_point = enter_double("Enter the extrapolation point x: ")
+    number_of_points = int((xn - x0) / h) + 1
+    x = [0.0] * number_of_points
+    y = [0.0] * number_of_points
+
+    for i in range(number_of_points):
+        x[i] = x0 + i * h
+        y[i] = 1.0 / (6*x[i]*x[i]*x[i]*x[i]+5)
+
+    print("Points")
+    for i in range(number_of_points):
+        print("x = {0} | y = {1:.5f} |".format(x[i], y[i]))
+
+
+    if extrapolation_point < x[0]:
+        extrapolated_value = extrapolate_newton(x, y, extrapolation_point)
+        print("Extrapolated value at a point {0}: {1}".format(extrapolation_point, extrapolated_value))
+
+    if extrapolation_point > xn:
+        coefficients = newton_interpolation(x, y)
+        extrapolated_value = evaluate_newton(x, y, coefficients, extrapolation_point)
+        print("Extrapolated value at a point {0}: {1}".format(extrapolation_point, extrapolated_value))
+
+
+def newton_interpolation(x, y):
     n = len(x)
-    coefficients = np.zeros((n, n))
-    coefficients[:, 0] = y
+    coefficients = [0.0] * n
 
-    for j in range(1, n):
-        for i in range(n - j):
-            coefficients[i][j] = (coefficients[i + 1][j - 1] - coefficients[i][j - 1]) / (x[i + j] - x[i])
-
-    return coefficients[0]
-
-
-def newton_interpolation(x, y, xi):
-    n = len(x)
-    coefficients = divided_differences(x, y)
-    result = coefficients[0]
-    product_term = 1
+    for i in range(n):
+        coefficients[i] = y[i]
 
     for i in range(1, n):
-        product_term *= (xi - x[i - 1])
-        result += coefficients[i] * product_term
+        for j in range(n - 1, i - 1, -1):
+            coefficients[j] = (coefficients[j] - coefficients[j - 1]) / (x[j] - x[j - i])
+
+    return coefficients
+
+
+def extrapolate_newton(x, y, extrapolation_point):
+    n = len(x)
+    coefficients = newton_interpolation(x, y)
+    result = coefficients[n - 1]
+
+    for i in range(n - 2, -1, -1):
+        result = result * (extrapolation_point - x[i]) + coefficients[i]
 
     return result
 
 
-def newton_interpolation_extrapolation(x, y, xi_min, xi_max, num_points):
-    xi = np.linspace(xi_min, xi_max, num_points)
-    interpolation_result_1 = np.zeros(num_points)
-    interpolation_result_2 = np.zeros(num_points)
+def evaluate_newton(x, y, coefficients, evaluation_point):
+    n = len(x)
+    result = coefficients[n - 1]
 
-    for i in range(num_points):
-        if xi_min <= xi[i] <= xi_max:
-            interpolation_result_1[i] = newton_interpolation(x, y, xi[i])
-        else:
-            coefficients = divided_differences(x, y)
-            result_1 = coefficients[0]
-            result_2 = coefficients[0]
-            product_term_1 = 1
-            product_term_2 = 1
+    for i in range(n - 2, -1, -1):
+        result = result * (evaluation_point - x[i]) + coefficients[i]
 
-            for j in range(1, len(x)):
-                product_term_1 *= (xi[i] - x[j - 1])
-                result_1 += coefficients[j] * product_term_1
-
-                product_term_2 *= (xi[i] - x[-j])
-                result_2 += coefficients[-j] * product_term_2
-
-            interpolation_result_1[i] = result_1
-            interpolation_result_2[i] = result_2
-
-    return xi, interpolation_result_1, interpolation_result_2
-
-x = np.array([2.97, 9.57])
-y = 1 / (6 * x*x*x*x + 5)
+    return result
 
 
-xi_min = 3
-xi_max = 9
-num_points = 6
+def enter_double(prompt):
+    while True:
+        try:
+            value = float(input(prompt))
+            return value
+        except ValueError:
+            print("Invalid number format. Try again.")
 
-xi, extrapolation_result_1, extrapolation_result_2 = newton_interpolation_extrapolation(x, y, xi_min, xi_max,
-                                                                                        num_points)
 
-print("Extrapolation Results 1:")
-print("    xi   |")
-print("---------------------------------")
-for i in range(len(xi)):
-    print(f"{xi[i]:8.2f} | {extrapolation_result_1[i]:12.9f}")
 
-print("\nExtrapolation Results 2:")
-print("    xi   |")
-print("---------------------------------")
-for i in range(len(xi)):
-    print(f"{xi[i]:8.2f} | {extrapolation_result_2[i]:12.9f}")
+run()
